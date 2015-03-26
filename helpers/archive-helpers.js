@@ -32,24 +32,27 @@ exports.initialize = function(pathsObj){
 //'./archives/sites.txt'        and  './web/archives/sites.txt'
 // for sites to be archived            archived sites 
   
-exports.readListOfUrls = function(){ 
-  fs.readFile('./archives/sites.txt', function(err, data) { 
+exports.readListOfUrls = function(callback){ 
+  fs.readFile(exports.paths.list, function(err, data) { 
     if (err) {
       throw err;
     } else {
-      return data.split('/n'); //returns array... probably should check if that is what it is expecting
+      data = data.toString().split('/n');
+      if ( callback ) {
+        callback(data);
+      }
     }
   });
 };
 
-exports.isUrlInList = function(url, callback) { //sites/sites.txt
-  fs.readFile('./archives/sites.txt', function(err, data) {
+exports.isUrlInList = function(url, callback) {
+  fs.readFile(exports.paths.list, function(err, data) {
     if (err) {
       throw err;
     }
-    data = data.split('/n');
+    data = data.toString().split('/n');
     for (var i = 0; i < data.length; i++) {
-      if (data[i] === url) {
+      if (data[i] === url.toString()) { //may not need the toString()
         return true;
       }
     }
@@ -57,25 +60,29 @@ exports.isUrlInList = function(url, callback) { //sites/sites.txt
   return false;
 };
 
-exports.addUrlToList = function(fileName, url, callback){
+exports.addUrlToList = function(url, callback){
   url += '/n'; //seems like a good idea... might not be
-  fs.appendFile(fileName, url, function(err) {
+
+  fs.appendFile(exports.paths.list, url, function(err) {
     if (err) {
       throw err;
     } else {
       console.log('Url saved!....maybe....you should check.');
     }
   });
+  if (callback) {
+    callback(url) //most likely incorrect.
+  }
 };
 
-exports.isUrlArchived = function(url, callback){ //archives/sites.txt
-  fs.readFile('./web/archives/sites.txt', function(err, data) {
+exports.isUrlArchived = function(url, callback){ 
+  fs.readFile(exports.paths.archivedSites, function(err, data) {
     if (err) {
       throw err;
     }
-    data = data.split('/n');
+    data = data.toString().split('/n');
     for (var i = 0; i < data.length; i++) {
-      if (data[i] === url) {
+      if (data[i] === url.toString()) { //again, may not need the toString()
         return true;
       }
     }
@@ -83,12 +90,12 @@ exports.isUrlArchived = function(url, callback){ //archives/sites.txt
   return false;
 };
 
-exports.downloadUrls = function(fileName, callback) { //not sure what this will be associated with. Needs correct fileName
+exports.downloadUrls = function(data) { //not sure what this will be associated with. Needs correct fileName (maybe)
   fs.readFile(fileName, function(err, data) {
     if (err) {
       throw err;
     } else {
-      return data.split('/n'); //need to check what format the data is to be returned.
+      return data; //need to check what format the data is to be returned.
     }
   });
 };
