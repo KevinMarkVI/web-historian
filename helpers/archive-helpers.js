@@ -25,17 +25,70 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function(){
+//callback?
+// may need fs.open and/or fs.close with flags to access files. 
+
+//two files: 
+//'./archives/sites.txt'        and  './web/archives/sites.txt'
+// for sites to be archived            archived sites 
+  
+exports.readListOfUrls = function(){ 
+  fs.readFile('./archives/sites.txt', function(err, data) { 
+    if (err) {
+      throw err;
+    } else {
+      return data.split('/n'); //returns array... probably should check if that is what it is expecting
+    }
+  });
 };
 
-exports.isUrlInList = function(){
+exports.isUrlInList = function(url, callback) { //sites/sites.txt
+  fs.readFile('./archives/sites.txt', function(err, data) {
+    if (err) {
+      throw err;
+    }
+    data = data.split('/n');
+    for (var i = 0; i < data.length; i++) {
+      if (data[i] === url) {
+        return true;
+      }
+    }
+  });
+  return false;
 };
 
-exports.addUrlToList = function(){
+exports.addUrlToList = function(fileName, url, callback){
+  url += '/n'; //seems like a good idea... might not be
+  fs.appendFile(fileName, url, function(err) {
+    if (err) {
+      throw err;
+    } else {
+      console.log('Url saved!....maybe....you should check.');
+    }
+  });
 };
 
-exports.isUrlArchived = function(){
+exports.isUrlArchived = function(url, callback){ //archives/sites.txt
+  fs.readFile('./web/archives/sites.txt', function(err, data) {
+    if (err) {
+      throw err;
+    }
+    data = data.split('/n');
+    for (var i = 0; i < data.length; i++) {
+      if (data[i] === url) {
+        return true;
+      }
+    }
+  });
+  return false;
 };
 
-exports.downloadUrls = function(){
+exports.downloadUrls = function(fileName, callback) { //not sure what this will be associated with. Needs correct fileName
+  fs.readFile(fileName, function(err, data) {
+    if (err) {
+      throw err;
+    } else {
+      return data.split('/n'); //need to check what format the data is to be returned.
+    }
+  });
 };
