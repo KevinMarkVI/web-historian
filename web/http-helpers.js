@@ -12,26 +12,45 @@ exports.headers = headers = {
 };
 
 exports.serveAssets = function(response, asset, callback) {
-  var statusCode = 200;
-  // Write some code here that helps serve up your static files!
-  // (Static files are things like html (yours or archived from others...),
-  // css, or anything that doesn't change often.)
-  response.writeHead(statusCode, headers);
-  response.write(asset);
-  response.end();
-};
-
-exports.sendResponse = function(response, statusCode) {
-  response.writeHead(statusCode, headers);
-  response.end();
-};
-
-exports.sendRedirect = function(response) { //probably more to this
-  response.writeHead(302, {
-    'Location': './public/loading.html'
+  fs.readFile(archive.paths.siteAssets + asset, function (err, data) {
+    if (err) {
+      fs.readFile(archive.paths.archivedSites + asset, function (err, data) {
+        if (err)  {
+          callback ? callback() : exports.send404(response);
+        } else {
+          exports.sendResponse(response, data);
+        }
+      });
+    } else {
+      exports.sendResponse(response, data);
+    }
   });
+};
+
+exports.sendResponse = function(response, obj, statusCode) {
+  statusCode = statusCode || 200;
+  response.writeHead(statusCode, headers);
+  response.end(obj);
+};
+
+exports.sendRedirect = function(response, location, statusCode) { //probably more to this
+  statusCode = statusCode || 302
+  response.writeHead(statusCode, {Location: location});
   response.end();
 
 };
  
 // As you progress, keep thinking about what helper functions you can put here!
+exports.collectData = function(request, callback) {
+  var data = '';
+  request.on('data', function(chunk) {
+    data += chunk;
+  });
+  request.on('end', function() {
+    callback(data);
+  })
+}
+
+exports.send404 = function(response) {
+  exports.sendResponse(response, '404: Page not found', 404);
+}

@@ -1,8 +1,17 @@
-var helper = require('../web/archive-helpers'); //check this file path
-
+var archive = require('../helpers/archive-helpers');
+var fs = require('fs');
+var path = require('path');
+var _ = require('underscore');
+var request = require('request');
 // Use the code in `archive-helpers.js` to actually download the urls
 // that are waiting.
 
+var htmlFetcher = function () {
+	archive.readListOfUrls(function(data) {
+		console.log(data);
+	});
+
+}
 
 
 

@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var request = require('request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -30,72 +31,57 @@ exports.initialize = function(pathsObj){
 
 //two files: 
 //'./archives/sites.txt'        and  './web/archives/sites.txt'
-// for sites to be archived            archived sites 
+// for sites to be archived            archived sites
   
 exports.readListOfUrls = function(callback){ 
-  fs.readFile(exports.paths.list, function(err, data) { 
-    if (err) {
-      throw err;
-    } else {
-      data = data.toString().split('/n');
-      if ( callback ) {
-        callback(data);
-      }
+  fs.readFile(exports.paths.list, function(err, data) {
+    if (err) return;
+    data = data.toString().split('\n'); 
+    if ( callback ) {
+      callback(data);
     }
   });
 };
 
-exports.isUrlInList = function(url, callback) {
-  fs.readFile(exports.paths.list, function(err, data) {
-    if (err) {
-      throw err;
-    }
-    data = data.toString().split('/n');
-    for (var i = 0; i < data.length; i++) {
-      if (data[i] === url.toString()) { //may not need the toString()
-        return true;
-      }
-    }
+exports.isUrlInList = function(url, callback) {//sequencing
+  exports.readListOfUrls(function(data) {
+    var found = _.some(data, function(dat, i) {
+      return dat.match(url);
   });
-  return false;
+    callback(found);
+  });
 };
 
 exports.addUrlToList = function(url, callback){
-  url += '/n'; //seems like a good idea... might not be
-
-  fs.appendFile(exports.paths.list, url, function(err) {
-    if (err) {
-      throw err;
-    } else {
-      console.log('Url saved!....maybe....you should check.');
-    }
+  fs.appendFile(exports.paths.list, url + '\n', function(err, file) {
+    callback();
   });
-  if (callback) {
-    callback(url) //most likely incorrect.
-  }
 };
 
 exports.isUrlArchived = function(url, callback){ 
+  var sitePath = path.join(exports.paths.archivedSites + url);
+
   fs.readFile(exports.paths.archivedSites, function(err, data) {
-    if (err) {
-      throw err;
-    }
-    data = data.toString().split('/n');
-    for (var i = 0; i < data.length; i++) {
-      if (data[i] === url.toString()) { //again, may not need the toString()
-        return true;
-      }
-    }
+    fs.exists(sitePath, function(exists) {
+      callback(exists);
+    })
   });
-  return false;
 };
 
-exports.downloadUrls = function(data) { //not sure what this will be associated with. Needs correct fileName (maybe)
-  fs.readFile(fileName, function(err, data) {
-    if (err) {
-      throw err;
-    } else {
-      return data; //need to check what format the data is to be returned.
-    }
-  });
+exports.downloadUrls = function(urls) { 
+  _.each(urls, function(url) {
+    if (!url) {return;}
+    request('http://' + url).pipe(fs.createWriteStream(exports.paths.archivedSites + "/" + url));
+  })
 };
+
+
+
+
+
+
+
+
+
+
+
